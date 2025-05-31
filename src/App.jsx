@@ -31,21 +31,44 @@ function App() {
   useEffect(() =>{
     fetchRandomWord();
   }, []);
+  
+  const handleKeyDown = (e) => {
+    if (isGuessed || turn >= 6) return;
 
-  const validateInput = (e) => {
-    const letter = e.target.value;
-    const lettersOnly = letter.replace(/[0-9]/, "");
-    setInputTextValue(lettersOnly.toUpperCase());
-  }
+    if (e.key === "Enter") {
+      handleCheck();
+    } 
+    else if (e.key === "Backspace") {
+      setInputTextValue(prev => prev.slice(0, -1));
+    } 
+    else if (/^[a-zA-Z]$/.test(e.key)) {
+      setInputTextValue(prev => {
+        if (prev.length < 5) {
+          return prev + e.key.toUpperCase();
+        }
+        return prev;
+      });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [turn, isGuessed]);
+
+
+  useEffect(() => {
+    console.log("inputTextValue:", inputTextValue);
+  }, [inputTextValue]);
 
   function handleCheck() {
-    if (inputTextValue.length !== 5) return;
+    if (inputTextValue.length != 5) return;
 
     const guess = inputTextValue.toUpperCase();;
     const newCorrectCheck = [];
-  const newSemiCorrectLetters = new Set();
-  const newCorrectLetters = new Set();
-  const newIncorrectLetters = new Set();
+    const newSemiCorrectLetters = new Set();
+    const newCorrectLetters = new Set();
+    const newIncorrectLetters = new Set();
 
     for (let i = 0; i < 5; i++) {
       if (guess[i] === word[i]) {
@@ -81,22 +104,6 @@ function App() {
     <Stack className="mainStack">
       <Navbar className="navbar">
         <Navbar.Brand className="navbar-brand">Wordle clone</Navbar.Brand>
-        <Container className="input-container">
-          {turn + 1 <= 5 && 
-          <>
-          <Form.Control className="form" 
-            onChange={validateInput} 
-            value={inputTextValue} 
-            maxLength="5"
-          />
-          <Button className="check-button" onClick={handleCheck}>
-            Check
-          </Button>
-          <p>Show password</p>
-          </>
-
-          }
-        </Container>
         <Button className="fetch-button" onClick={() => fetchRandomWord()}>Get new word</Button>
       </Navbar>
 
@@ -104,10 +111,19 @@ function App() {
         {Array.from({ length: turn+1 }).map((_, row_id) => (
           <Row key={row_id} className="grid-row">
             {Array.from({ length: 5 }).map((_, col_id) => {
-              const letter = guesses[row_id]?.[col_id] || "";
-              const bgColor =
-                correctCheck[row_id]?.[col_id] === "2" ? "green" :
-                correctCheck[row_id]?.[col_id] === "1" && "yellow";
+              let letter = "";
+              let bgColor = "white";
+
+              if (row_id < turn) {
+                letter = guesses[row_id]?.[col_id] || "";
+                const check = correctCheck[row_id]?.[col_id];
+                bgColor =
+                  check === "2" ? "green" :
+                  check === "1" ? "yellow" :
+                  "lightgray";
+              } else if (row_id === turn) {
+                letter = inputTextValue[col_id] || "";
+              }
               return (
                 <Col
                   key={col_id}
