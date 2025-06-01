@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Container, Row, Col, Navbar, Stack, Button, Form } from "react-bootstrap";
-import "./style.css";
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { Container, Navbar, Stack, Button } from "react-bootstrap";
 import LetterRow from './components/letterRow';
+import './globals.css';
 
 function App() {
   const [word, setWord] = useState("");
@@ -13,6 +13,8 @@ function App() {
   const [incorrectLetters, setIncorrectLetters] = useState([]);
   const [guesses, setGuesses] = useState([]);
   const [correctCheck, setCorrectCheck] = useState([]);
+
+  const gameContainerRef = useRef(null);
 
   async function fetchRandomWord() {
     const res = await fetch(`https://random-word-api.herokuapp.com/word?length=5`);
@@ -26,14 +28,20 @@ function App() {
     setInputTextValue("");
     setTurn(0);
     setIsGuessed(false);
+    
+    setTimeout(() => {
+      gameContainerRef.current?.focus();
+    }, 0);
   }
 
   useEffect(() =>{
     fetchRandomWord();
   }, []);
   
-  const handleKeyDown = (e) => {
-    if (isGuessed || turn >= 6) return;
+  const handleKeyDown = useCallback((e) => {
+    if (isGuessed || turn > 4) {
+      return;
+    }
 
     if (e.key === "Enter") {
       handleCheck();
@@ -49,20 +57,15 @@ function App() {
         return prev;
       });
     }
-  };
+  }, [inputTextValue, turn, isGuessed]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [turn, isGuessed]);
+  }, [handleKeyDown]);
 
-
-  useEffect(() => {
-    console.log("inputTextValue:", inputTextValue);
-  }, [inputTextValue]);
-
-  function handleCheck() {
-    if (inputTextValue.length != 5) return;
+  const handleCheck = useCallback(() => {
+    if (inputTextValue.length !== 5) return;
 
     const guess = inputTextValue.toUpperCase();;
     const newCorrectCheck = [];
@@ -98,47 +101,71 @@ function App() {
     else {
       setTurn(prev => prev + 1);
     }
-  }
+  }, [inputTextValue, word]);
 
   return (
-    <Stack className="mainStack">
-      <Navbar className="navbar">
-        <Navbar.Brand className="navbar-brand">Wordle clone</Navbar.Brand>
-        <Button className="fetch-button" onClick={() => fetchRandomWord()}>Get new word</Button>
+    <Stack className='bg-slate-800 w-screen h-screen'>
+      <Navbar className='w-full h-20
+      flex justify-between items-center px-3 
+      bg-slate-700'>
+        <Navbar.Brand className='text-2xl text-neutral-300 font-bold'
+        >Wordle clone</Navbar.Brand>
+        <Button className='h-12 w-30 
+          bg-sky-800 rounded-lg
+          text-neutral-300 font-semibold
+          cursor-pointer hover:bg-sky-900'
+          onClick={() => fetchRandomWord()}
+        >Get new word</Button>
       </Navbar>
 
-      <Container className="grid-container">
-        {Array.from({ length: turn+1 }).map((_, row_id) => (
-          <Row key={row_id} className="grid-row">
+      <Container 
+        className='w-90 h-95
+        flex flex-col mx-auto mt-2
+        focus:outline-none'
+        tabIndex={0}
+        ref={gameContainerRef}
+      >
+        {Array.from({ length: Math.min(turn + 1, 5) }).map((_, row_id) => (
+          <Container key={row_id}
+            className='w-full h-18
+            grid grid-cols-5'
+          >
             {Array.from({ length: 5 }).map((_, col_id) => {
               let letter = "";
-              let bgColor = "white";
+              let bgColor = "bg-sky-950";
 
               if (row_id < turn) {
                 letter = guesses[row_id]?.[col_id] || "";
                 const check = correctCheck[row_id]?.[col_id];
-                bgColor =
-                  check === "2" ? "green" :
-                  check === "1" ? "yellow" :
-                  "lightgray";
+                if (check === "2") {
+                  bgColor = "bg-emerald-500";
+                }
+                else if (check === "1") {
+                  bgColor = "bg-amber-600";
+                }
               } else if (row_id === turn) {
                 letter = inputTextValue[col_id] || "";
               }
               return (
-                <Col
+                <Container
+                  className={`w-16 h-16
+                  flex items-center justify-center
+                  border-4 border-slate-900 rounded-2xl
+                  font-extrabold text-3xl text-neutral-300
+                  ${bgColor}`}
                   key={col_id}
-                  className="grid-col"
-                  style={{ backgroundColor: bgColor }}
                 >
                   {letter}
-                </Col>
+                </Container>
               );
             })}
-          </Row>
+          </Container>
         ))}
       </Container>
-      <Container className="letterKeyboard">
-        <LetterRow correctLetters={correctLetters} semiCorrectLetters={semiCorrectLetters} incorrectLetters={incorrectLetters}/>
+      <Container>
+        <LetterRow correctLetters={correctLetters} semiCorrectLetters={semiCorrectLetters} incorrectLetters={incorrectLetters}
+        handleCheck={handleCheck} isGuessed={isGuessed} turn={turn}
+        />
       </Container>
     </Stack>
   )
