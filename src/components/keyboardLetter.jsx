@@ -1,4 +1,3 @@
-import { Container } from "react-bootstrap";
 import '../globals.css';
 
 function KeyboardLetter({letter, isCorrect}) {
@@ -17,12 +16,12 @@ function KeyboardLetter({letter, isCorrect}) {
   }
   
   return(
-    <Container className={`w-14 h-14 
+    <div className={`size-10 md:size-14
     flex items-center justify-center m-1
     font-bold text-2xl rounded-lg
     ${bgColor} ${fontColor}`}>
       <p>{String.fromCharCode(letter)}</p>
-    </Container>
+    </div>
   );
 } 
 

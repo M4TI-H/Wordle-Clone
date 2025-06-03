@@ -1,4 +1,4 @@
-import { Button, Row, Col } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 import KeyboardLetter from "./keyboardLetter";
 import '../globals.css';
 
@@ -9,7 +9,7 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
 
   return(
     <>
-     <Row className='w-146 h-20
+     <Row className='w-112 md:w-146 h-14 md:h-20
      flex justify-center items-center mx-auto
      bg-slate-900 rounded-t-lg'
      >
@@ -29,7 +29,7 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
         </Col>
       ))}
     </Row>
-    <Row className='w-146 h-14
+    <Row className='w-112 md:w-146 h-12 md:h-20
       flex justify-center items-center mx-auto
       bg-slate-900'
     >
@@ -49,7 +49,7 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
         </Col>
       ))}
     </Row>
-    <Row className='w-146 h-20
+    <Row className='w-112 md:w-146 h-14 md:h-20
       flex justify-center items-center mx-auto
       bg-slate-900 rounded-b-lg'
     >
@@ -68,13 +68,13 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
           }
         </Col>
       ))}
-      <Button onClick={handleCheck} disabled={isGuessed || turn > 5}
-        className='w-14 h-14 
+      <button onClick={handleCheck} disabled={isGuessed || turn > 5}
+        className='size-10 md:size-14
         flex items-center justify-center m-1
         font-bold text-lg text-neutral-300
         rounded-lg cursor-pointer
         bg-sky-800 hover:bg-sky-900'
-      >&#129030;</Button>
+      >&#129030;</button>
     </Row>
     </>
    

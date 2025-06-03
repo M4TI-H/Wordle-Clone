@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Container, Navbar, Stack, Button } from "react-bootstrap";
 import LetterRow from './components/letterRow';
 import './globals.css';
 
@@ -22,13 +21,14 @@ function App() {
     let newWord = data[0].toUpperCase();
     setWord(newWord);
 
-    console.log(newWord);
     setGuesses([]);
     setCorrectCheck([]);
     setInputTextValue("");
     setTurn(0);
     setIsGuessed(false);
-    
+    setSemiCorrectLetters([]);
+    setCorrectLetters([]);
+    setIncorrectLetters([]);
     setTimeout(() => {
       gameContainerRef.current?.focus();
     }, 0);
@@ -39,7 +39,7 @@ function App() {
   }, []);
   
   const handleKeyDown = useCallback((e) => {
-    if (isGuessed || turn > 4) {
+    if (isGuessed || turn >= 5) {
       return;
     }
 
@@ -104,30 +104,30 @@ function App() {
   }, [inputTextValue, word]);
 
   return (
-    <Stack className='bg-slate-800 w-screen h-screen'>
-      <Navbar className='w-full h-20
-      flex justify-between items-center px-3 
+    <div className='flex flex-col bg-slate-800 w-screen min-h-[100dvh]'>
+      <nav className='w-full h-20
+      flex justify-between items-center px-10 
       bg-slate-700'>
-        <Navbar.Brand className='text-2xl text-neutral-300 font-bold'
-        >Wordle clone</Navbar.Brand>
-        <Button className='h-12 w-30 
+        <h1 className='text-2xl text-neutral-300 font-bold'
+        >Wordle Clone</h1>
+        <button className='h-12 w-30 
           bg-sky-800 rounded-lg
           text-neutral-300 font-semibold
           cursor-pointer hover:bg-sky-900'
           onClick={() => fetchRandomWord()}
-        >Get new word</Button>
-      </Navbar>
+        >Get new word</button>
+      </nav>
 
-      <Container 
-        className='w-90 h-95
+      <div 
+        className='w-70 md:w-90 min-h-65
         flex flex-col mx-auto mt-2
         focus:outline-none'
         tabIndex={0}
         ref={gameContainerRef}
       >
         {Array.from({ length: Math.min(turn + 1, 5) }).map((_, row_id) => (
-          <Container key={row_id}
-            className='w-full h-18
+          <div key={row_id}
+            className='w-full h-14 md:h-18
             grid grid-cols-5'
           >
             {Array.from({ length: 5 }).map((_, col_id) => {
@@ -147,28 +147,67 @@ function App() {
                 letter = inputTextValue[col_id] || "";
               }
               return (
-                <Container
-                  className={`w-16 h-16
+                <div
+                  className={`size-12 md:size-16
                   flex items-center justify-center
-                  border-4 border-slate-900 rounded-2xl
+                  border-4 border-slate-900 rounded-xl md:rounded-2xl
                   font-extrabold text-3xl text-neutral-300
                   ${bgColor}`}
                   key={col_id}
                 >
                   {letter}
-                </Container>
+                </div>
               );
             })}
-          </Container>
+          </div>
         ))}
-      </Container>
-      <Container>
+      </div>
+      <div className='mt-auto mb-2'>
         <LetterRow correctLetters={correctLetters} semiCorrectLetters={semiCorrectLetters} incorrectLetters={incorrectLetters}
         handleCheck={handleCheck} isGuessed={isGuessed} turn={turn}
         />
-      </Container>
-    </Stack>
-  )
+      </div>
+
+      {isGuessed &&
+      <div className='w-90 h-100 absolute top-1/2 left-1/2 
+        -translate-x-1/2 -translate-y-1/2
+        flex flex-col items-center p-3 py-10
+        bg-slate-900 rounded-xl border-5 border-emerald-500'
+      >
+        <p className='font-bold text-3xl text-sky-900'>You won!</p>
+        <p className='font-bold text-5xl text-emerald-500 mt-2'
+        >{word}</p>
+        <p className='font-bold text-3xl text-sky-900'>You got it in {turn+1} {turn === 0 ? "try" : "tries"}!</p>
+        <button className='h-12 w-30 
+          bg-sky-800 rounded-lg mt-auto
+          text-neutral-300 font-semibold
+          cursor-pointer hover:bg-sky-900'
+          onClick={() => fetchRandomWord()}
+        >Play again!</button>
+      </div>
+      }
+      
+      {!isGuessed && turn === 5 && 
+      <div className='w-90 h-100 absolute top-1/2 left-1/2 
+        -translate-x-1/2 -translate-y-1/2
+        flex flex-col items-center p-3 py-10
+        bg-slate-900 rounded-xl border-5 border-rose-700'
+      >
+        <p className='font-bold text-3xl text-sky-900'>You lost!</p>
+        <p className='font-bold text-xl text-sky-900 mt-5'>The word was:</p>
+        <p className='font-bold text-5xl text-rose-700 mt-2'
+        >{word}</p>
+        <button className='h-12 w-30 
+          bg-sky-800 rounded-lg mt-auto
+          text-neutral-300 font-semibold
+          cursor-pointer hover:bg-sky-900'
+          onClick={() => fetchRandomWord()}
+        >Try again!</button>
+      </div>
+      }
+
+    </div>
+  );
 }
 
 export default App
