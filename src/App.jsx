@@ -7,12 +7,12 @@ function App() {
   const [inputTextValue, setInputTextValue] = useState("");
   const [turn, setTurn] = useState(0);
   const [isGuessed, setIsGuessed] = useState(false);
+  const [getNewWord, setGetNewWord] = useState(false);
   const [semiCorrectLetters, setSemiCorrectLetters] = useState([]);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [incorrectLetters, setIncorrectLetters] = useState([]);
   const [guesses, setGuesses] = useState([]);
   const [correctCheck, setCorrectCheck] = useState([]);
-
   const gameContainerRef = useRef(null);
 
   async function fetchRandomWord() {
@@ -21,14 +21,18 @@ function App() {
     let newWord = data[0].toUpperCase();
     setWord(newWord);
 
+    console.log(word);
+
     setGuesses([]);
     setCorrectCheck([]);
     setInputTextValue("");
     setTurn(0);
     setIsGuessed(false);
+    setGetNewWord(false);
     setSemiCorrectLetters([]);
     setCorrectLetters([]);
     setIncorrectLetters([]);
+    
     setTimeout(() => {
       gameContainerRef.current?.focus();
     }, 0);
@@ -38,6 +42,12 @@ function App() {
     fetchRandomWord();
   }, []);
   
+  const nextWordKeyDown = (e) => {
+    if (e.key === "Enter") {
+      fetchRandomWord();
+    }
+  }
+
   const handleKeyDown = useCallback((e) => {
     if (isGuessed || turn >= 5) {
       return;
@@ -60,9 +70,17 @@ function App() {
   }, [inputTextValue, turn, isGuessed]);
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+    if (!getNewWord){
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+
+    }
+    else {
+      window.addEventListener("keydown", nextWordKeyDown);
+      return () => window.removeEventListener("keydown", nextWordKeyDown);
+    }
+
+  }, [handleKeyDown, getNewWord]);
 
   const handleCheck = useCallback(() => {
     if (inputTextValue.length !== 5) return;
@@ -114,7 +132,7 @@ function App() {
           bg-sky-800 rounded-lg
           text-neutral-300 font-semibold
           cursor-pointer hover:bg-sky-900'
-          onClick={() => fetchRandomWord()}
+          onClick={() => setGetNewWord(true)}
         >Get new word</button>
       </nav>
 
@@ -162,50 +180,81 @@ function App() {
           </div>
         ))}
       </div>
-      <div className='mt-auto mb-2'>
+      <div className='mt-auto mx-auto sm:mb-2'>
         <LetterRow correctLetters={correctLetters} semiCorrectLetters={semiCorrectLetters} incorrectLetters={incorrectLetters}
         handleCheck={handleCheck} isGuessed={isGuessed} turn={turn}
         />
       </div>
 
       {isGuessed &&
-      <div className='w-90 h-100 absolute top-1/2 left-1/2 
-        -translate-x-1/2 -translate-y-1/2
-        flex flex-col items-center p-3 py-10
-        bg-slate-900 rounded-xl border-5 border-emerald-500'
-      >
-        <p className='font-bold text-3xl text-sky-900'>You won!</p>
-        <p className='font-bold text-5xl text-emerald-500 mt-2'
-        >{word}</p>
-        <p className='font-bold text-3xl text-sky-900'>You got it in {turn+1} {turn === 0 ? "try" : "tries"}!</p>
-        <button className='h-12 w-30 
-          bg-sky-800 rounded-lg mt-auto
-          text-neutral-300 font-semibold
-          cursor-pointer hover:bg-sky-900'
-          onClick={() => fetchRandomWord()}
-        >Play again!</button>
-      </div>
+      <>
+        <div className='absolute z-0 w-screen h-screen bg-neutral-900 opacity-50'>
+        </div>
+        <div className='w-90 h-100 absolute top-1/2 left-1/2 
+          -translate-x-1/2 -translate-y-1/2
+          flex flex-col items-center p-3 py-10
+          bg-slate-800 rounded-xl border-5 border-emerald-500'
+        >
+          <p className='font-bold text-3xl text-sky-800'>You won!</p>
+          <p className='font-bold text-5xl text-emerald-500 mt-2'
+          >{word}</p>
+          <p className='font-bold text-3xl text-sky-900'>You got it in {turn+1} {turn === 0 ? "try" : "tries"}!</p>
+          <button className='h-12 w-30 
+            bg-sky-800 rounded-lg mt-auto
+            text-neutral-300 font-semibold
+            cursor-pointer hover:bg-sky-900'
+            onClick={() => fetchRandomWord()}
+          >Play again!</button>
+        </div>
+      </>
       }
       
       {!isGuessed && turn === 5 && 
-      <div className='w-90 h-100 absolute top-1/2 left-1/2 
-        -translate-x-1/2 -translate-y-1/2
-        flex flex-col items-center p-3 py-10
-        bg-slate-900 rounded-xl border-5 border-rose-700'
-      >
-        <p className='font-bold text-3xl text-sky-900'>You lost!</p>
-        <p className='font-bold text-xl text-sky-900 mt-5'>The word was:</p>
-        <p className='font-bold text-5xl text-rose-700 mt-2'
-        >{word}</p>
-        <button className='h-12 w-30 
-          bg-sky-800 rounded-lg mt-auto
-          text-neutral-300 font-semibold
-          cursor-pointer hover:bg-sky-900'
-          onClick={() => fetchRandomWord()}
-        >Try again!</button>
-      </div>
+      <>
+        <div className='absolute z-0 w-screen h-screen bg-neutral-900 opacity-50'>
+        </div>
+        <div className='w-90 h-100 absolute top-1/2 left-1/2 
+          -translate-x-1/2 -translate-y-1/2
+          flex flex-col items-center p-3 py-10
+          bg-slate-800 rounded-xl border-5 border-rose-700'
+        >
+          <p className='font-bold text-3xl text-sky-800'>You lost!</p>
+          <p className='font-bold text-xl text-sky-800 mt-5'>The word was:</p>
+          <p className='font-bold text-5xl text-rose-700 mt-2'
+          >{word}</p>
+          <button className='h-12 w-30 
+            bg-sky-800 rounded-lg mt-auto
+            text-neutral-300 font-semibold
+            cursor-pointer hover:bg-sky-900'
+            onClick={() => fetchRandomWord()}
+          >Try again!</button>
+        </div>
+      </>
       }
-
+      {getNewWord && 
+      <>
+      
+        <div className='absolute z-0 w-screen h-screen bg-neutral-900 opacity-50'>
+        </div>
+        <div className='absolute w-90 h-100 z-50 top-1/2 left-1/2 
+          -translate-x-1/2 -translate-y-1/2
+          flex flex-col items-center p-3 py-10
+          bg-slate-800 rounded-xl border-5 border-sky-800'
+        >
+          <p className='font-bold text-3xl text-sky-800'>Better luck next time</p>
+          <p className='font-bold text-xl text-sky-800 mt-5'>The word was:</p>
+          <p className='font-bold text-5xl text-sky-800 mt-2'
+          >{word}</p>
+          <button className='h-12 w-30 
+            bg-sky-800 rounded-lg mt-auto
+            text-neutral-300 font-semibold
+            cursor-pointer hover:bg-sky-900'
+            onClick={() => fetchRandomWord()}
+          >Get new word</button>
+        </div>
+      </>
+      }
+      
     </div>
   );
 }

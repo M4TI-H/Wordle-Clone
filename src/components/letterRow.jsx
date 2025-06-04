@@ -7,77 +7,59 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
   const secondRow = Array.from({ length: 9 }, (_, i) => 74 + i);      // J-R
   const thirdRow = Array.from({ length: 8 }, (_, i) => 83 + i);       // S-Z
 
+  const displayLetter = (ascii) => {
+    const letter = String.fromCharCode(ascii);
+    if (correctLetters.includes(letter)) {
+      return <KeyboardLetter letter={ascii} isCorrect={"2"}/>
+    }
+    else if (semiCorrectLetters.includes(letter)) {
+      return <KeyboardLetter letter={ascii} isCorrect={"1"}/>
+    }
+    else if (incorrectLetters.includes(letter)) {
+      return <KeyboardLetter letter={ascii} isCorrect={"0"}/>
+    }
+    else {
+      return <KeyboardLetter letter={ascii} isCorrect={"-1"}/>
+    }
+  }
+
   return(
-    <>
-     <Row className='w-112 md:w-146 h-14 md:h-20
-     flex justify-center items-center mx-auto
-     bg-slate-900 rounded-t-lg'
-     >
-      {firstRow.map((ascii, id) => (
-        <Col key={id}>
-          {correctLetters.includes(String.fromCharCode(ascii)) ?
-           <KeyboardLetter letter={ascii} isCorrect={"2"}/>
-            :
-            semiCorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"1"}/>
-            :
-            incorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"0"}/>
-            :
-            <KeyboardLetter letter={ascii} isCorrect={"-1"}/>
-          }
-        </Col>
-      ))}
-    </Row>
-    <Row className='w-112 md:w-146 h-12 md:h-20
-      flex justify-center items-center mx-auto
-      bg-slate-900'
-    >
-      {secondRow.map((ascii, id) => (
-        <Col key={id}>
-          {correctLetters.includes(String.fromCharCode(ascii)) ?
-           <KeyboardLetter letter={ascii} isCorrect={"2"}/>
-            :
-            semiCorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"1"}/>
-            :
-            incorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"0"}/>
-            :
-            <KeyboardLetter letter={ascii} isCorrect={"-1"}/>
-          }
-        </Col>
-      ))}
-    </Row>
-    <Row className='w-112 md:w-146 h-14 md:h-20
-      flex justify-center items-center mx-auto
-      bg-slate-900 rounded-b-lg'
-    >
-      {thirdRow.map((ascii, id) => (
-        <Col key={id}>
-          {correctLetters.includes(String.fromCharCode(ascii)) ?
-           <KeyboardLetter letter={ascii} isCorrect={"2"}/>
-            :
-            semiCorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"1"}/>
-            :
-            incorrectLetters.includes(String.fromCharCode(ascii)) ?
-            <KeyboardLetter letter={ascii} isCorrect={"0"}/>
-            :
-            <KeyboardLetter letter={ascii} isCorrect={"-1"}/>
-          }
-        </Col>
-      ))}
-      <button onClick={handleCheck} disabled={isGuessed || turn > 5}
-        className='size-10 md:size-14
-        flex items-center justify-center m-1
-        font-bold text-lg text-neutral-300
-        rounded-lg cursor-pointer
-        bg-sky-800 hover:bg-sky-900'
-      >&#129030;</button>
-    </Row>
-    </>
-   
+    <div className='w-auto max-w-screen '>
+      <div className='flex justify-center bg-slate-900 rounded-t-lg pt-2 px-2'>
+        <div className='grid grid-cols-9 md:gap-[0.5vw] gap-[1vw]'>
+          {firstRow.map((ascii, id) => (
+            <div key={id}>
+              {displayLetter(ascii)}
+            </div>
+          ))}
+        </div>
+      </div>
+     
+      <div className='flex justify-center bg-slate-900'>
+          <div className='grid grid-cols-9 md:gap-[0.5vw] gap-[1vw] my-2'>
+            {secondRow.map((ascii, id) => (
+              <div key={id}>
+                {displayLetter(ascii)}
+              </div>
+            ))}
+          </div>
+        </div>
+      <div className='flex justify-center bg-slate-900 rounded-b-lg pb-2'>
+          <div className='grid grid-cols-9 md:gap-[0.5vw] gap-[1vw]'>
+            {thirdRow.map((ascii, id) => (
+              <div key={id}>
+                {displayLetter(ascii)}
+              </div>
+            ))}
+            <button onClick={handleCheck} disabled={isGuessed || turn > 5}
+              className='w-[min(4rem,8vw)] sm:w-[min(3rem, 8vw)] aspect-square
+              font-bold text-lg text-neutral-300
+              rounded-lg cursor-pointer
+              bg-sky-800 hover:bg-sky-900'
+            >&#129030;</button>
+          </div>
+        </div>
+    </div>
   );
 } 
 

@@ -16,10 +16,12 @@ function KeyboardLetter({letter, isCorrect}) {
   }
   
   return(
-    <div className={`size-10 md:size-14
-    flex items-center justify-center m-1
-    font-bold text-2xl rounded-lg
-    ${bgColor} ${fontColor}`}>
+    <div className={`
+      w-[min(4rem,8vw)] lg:w-[min(3rem, 8vw)] aspect-square
+      flex items-center justify-center
+      font-bold text-lg md:text-2xl rounded-lg
+      ${bgColor} ${fontColor}
+      `}>
       <p>{String.fromCharCode(letter)}</p>
     </div>
   );
