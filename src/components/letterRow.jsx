@@ -2,7 +2,7 @@ import { Row, Col } from "react-bootstrap";
 import KeyboardLetter from "./keyboardLetter";
 import '../globals.css';
 
-function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handleCheck, isGuessed, turn}) {
+function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handleCheck, isGuessed, turn, setInputTextValue}) {
   const firstRow = Array.from({ length: 9 }, (_, i) => 65 + i);       // A-I
   const secondRow = Array.from({ length: 9 }, (_, i) => 74 + i);      // J-R
   const thirdRow = Array.from({ length: 8 }, (_, i) => 83 + i);       // S-Z
@@ -10,16 +10,16 @@ function LetterRow({correctLetters, semiCorrectLetters, incorrectLetters, handle
   const displayLetter = (ascii) => {
     const letter = String.fromCharCode(ascii);
     if (correctLetters.includes(letter)) {
-      return <KeyboardLetter letter={ascii} isCorrect={"2"}/>
+      return <KeyboardLetter letter={ascii} isCorrect={"2"} setInputTextValue={setInputTextValue}/>
     }
     else if (semiCorrectLetters.includes(letter)) {
-      return <KeyboardLetter letter={ascii} isCorrect={"1"}/>
+      return <KeyboardLetter letter={ascii} isCorrect={"1"} setInputTextValue={setInputTextValue}/>
     }
     else if (incorrectLetters.includes(letter)) {
-      return <KeyboardLetter letter={ascii} isCorrect={"0"}/>
+      return <KeyboardLetter letter={ascii} isCorrect={"0"} setInputTextValue={setInputTextValue}/>
     }
     else {
-      return <KeyboardLetter letter={ascii} isCorrect={"-1"}/>
+      return <KeyboardLetter letter={ascii} isCorrect={"-1"} setInputTextValue={setInputTextValue}/>
     }
   }
 
