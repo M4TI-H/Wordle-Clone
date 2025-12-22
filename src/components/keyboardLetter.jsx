@@ -1,28 +1,27 @@
 import '../globals.css';
 
-function KeyboardLetter({letter, isCorrect}) {
+function KeyboardLetter({ letter, isCorrect }) {
+  let bgColor = 'bg-sky-950';
+  let fontColor = 'text-neutral-300';
 
-  let bgColor = "bg-sky-950";
-  let fontColor = "text-neutral-300";
-  if (isCorrect === "2") {
-    bgColor = "bg-emerald-500";
+  if (isCorrect === 'correct') {
+    bgColor = 'bg-emerald-500';
+  } else if (isCorrect === 'semicorrect') {
+    bgColor = 'bg-amber-600';
+  } else if (isCorrect === 'incorrect') {
+    bgColor = 'bg-slate-800';
+    fontColor = 'text-gray-500';
   }
-  else if (isCorrect === "1") {
-    bgColor = "bg-amber-600";
-  }
-  else if (isCorrect === "0") {
-    bgColor = "";
-    fontColor = "text-gray-800";
-  }
-  
-  return(
-    <div className={`size-10 md:size-14
-    flex items-center justify-center m-1
-    font-bold text-2xl rounded-lg
-    ${bgColor} ${fontColor}`}>
-      <p>{String.fromCharCode(letter)}</p>
+
+  return (
+    <div
+      className={`w-full h-12 md:h-16 flex items-center justify-center font-semibold text-sm sm:text-lg md:text-2xl rounded-sm md:rounded-lg transition-colors duration-250
+        ${bgColor} ${fontColor}
+      `}
+    >
+      <p className="select-none">{String.fromCharCode(letter)}</p>
     </div>
   );
-} 
+}
 
 export default KeyboardLetter;
