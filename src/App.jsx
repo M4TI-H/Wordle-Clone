@@ -4,8 +4,6 @@ import Keyboard from './components/Keyboard';
 import NavBar from './components/navBar';
 import ResultAlert from './components/resultAlert';
 import AnswerGrid from './components/answerGrid';
-import GuessedAlert from './components/GuessedAlert';
-import NotGuessedAlert from './components/NotGuessedAlert';
 
 function App() {
   const [word, setWord] = useState('');
@@ -13,13 +11,17 @@ function App() {
   const [turn, setTurn] = useState(0);
   const [isGuessed, setIsGuessed] = useState(false);
 
-  const [getNewWord, setGetNewWord] = useState(false);
+  // semiCorrectLetters itd...
   const [semiCorrectLetters, setSemiCorrectLetters] = useState([]);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [incorrectLetters, setIncorrectLetters] = useState([]);
   const [guesses, setGuesses] = useState([]);
   const [correctCheck, setCorrectCheck] = useState([]);
   const gameContainerRef = useRef(null);
+
+  // Logika: Czy gra się skończyła?
+  const isGameLost = !isGuessed && turn === 5;
+  const showModal = isGuessed || isGameLost;
 
   async function fetchRandomWord() {
     const res = await fetch(
@@ -29,15 +31,13 @@ function App() {
     let newWord = data[0].toUpperCase();
 
     setWord(newWord);
-
-    console.log(word);
+    console.log(newWord); // Poprawione: logujemy newWord, bo state 'word' zaktualizuje się dopiero przy renderze
 
     setGuesses([]);
     setCorrectCheck([]);
     setInputTextValue('');
     setTurn(0);
     setIsGuessed(false);
-    setGetNewWord(false);
     setSemiCorrectLetters([]);
     setCorrectLetters([]);
     setIncorrectLetters([]);
@@ -47,26 +47,12 @@ function App() {
     }, 0);
   }
 
+  // Pobranie słowa na start
   useEffect(() => {
     fetchRandomWord();
   }, []);
 
-  const nextWordKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      fetchRandomWord();
-    }
-  };
-
-  useEffect(() => {
-    if (!getNewWord) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    } else {
-      window.addEventListener('keydown', nextWordKeyDown);
-      return () => window.removeEventListener('keydown', nextWordKeyDown);
-    }
-  }, [handleKeyDown, getNewWord]);
-
+  // 1. NAJPIERW DEFINIUJEMY handleCheck (bo jest używane w handleKeyDown)
   const handleCheck = useCallback(() => {
     if (inputTextValue.length !== 5) return;
 
@@ -110,9 +96,11 @@ function App() {
     }
   }, [inputTextValue, word]);
 
+  // 2. POTEM DEFINIUJEMY handleKeyDown (bo używa handleCheck)
   const handleKeyDown = useCallback(
     (e) => {
-      if (isGuessed || turn >= 5) return;
+      // Jeśli gra skończona (modal widoczny), ignoruj wpisywanie liter
+      if (showModal) return;
 
       if (e.key === 'Enter') {
         handleCheck();
@@ -125,16 +113,28 @@ function App() {
         });
       }
     },
-    [inputTextValue, turn, isGuessed, handleCheck]
+    [inputTextValue, turn, showModal, handleCheck]
   );
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  // 3. OBSŁUGA ENTERA PO ZAKOŃCZENIU GRY (Restart)
+  const nextWordKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      fetchRandomWord();
+    }
+  }, []); // Pusta zależność, fetchRandomWord jest stabilne (lub można dodać do deps jeśli linter krzyczy)
 
-  const isGameLost = !isGuessed && turn === 5;
-  const showModal = isGuessed || isGameLost;
+  // 4. NA KOŃCU USE EFFECT DO PODPIĘCIA NASŁUCHIWANIA
+  useEffect(() => {
+    if (showModal) {
+      // Jeśli gra skończona -> Czekamy tylko na Enter żeby zresetować
+      window.addEventListener('keydown', nextWordKeyDown);
+      return () => window.removeEventListener('keydown', nextWordKeyDown);
+    } else {
+      // Jeśli gra trwa -> Obsługujemy wpisywanie słów
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [handleKeyDown, nextWordKeyDown, showModal]);
 
   return (
     <div className="flex flex-col items-center bg-slate-800 gap-4 md:pb-4 w-screen min-h-screen">
@@ -146,6 +146,7 @@ function App() {
         inputTextValue={inputTextValue}
         correctCheck={correctCheck}
       />
+
       <Keyboard
         correctLetters={correctLetters}
         semiCorrectLetters={semiCorrectLetters}
@@ -154,8 +155,9 @@ function App() {
         isGuessed={isGuessed}
         turn={turn}
       />
+
       {showModal && (
-        <div className="fixed w-full h-full flex items-center justify-center bg-black/60">
+        <div className="fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <ResultAlert
             isWon={isGuessed}
             word={word}
