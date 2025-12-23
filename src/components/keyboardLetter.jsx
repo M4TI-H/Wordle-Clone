@@ -2,14 +2,18 @@ import '../globals.css';
 
 function KeyboardLetter({ letter, isCorrect }) {
   let bgColor = 'bg-sky-950';
+  let bgHover = 'hover:bg-slate-800';
   let fontColor = 'text-neutral-300';
 
   if (isCorrect === 'correct') {
     bgColor = 'bg-emerald-500';
+    bgHover = 'hover:bg-emerald-600';
   } else if (isCorrect === 'semicorrect') {
     bgColor = 'bg-amber-600';
+    bgHover = 'hover:bg-amber-700';
   } else if (isCorrect === 'incorrect') {
     bgColor = 'bg-slate-800';
+    bgHover = '';
     fontColor = 'text-gray-500';
   }
 

@@ -4,19 +4,21 @@ import Keyboard from './components/Keyboard';
 import NavBar from './components/navBar';
 import ResultAlert from './components/resultAlert';
 import AnswerGrid from './components/answerGrid';
+import GuessedAlert from './components/GuessedAlert';
+import NotGuessedAlert from './components/NotGuessedAlert';
 
 function App() {
   const [word, setWord] = useState('');
   const [inputTextValue, setInputTextValue] = useState('');
   const [turn, setTurn] = useState(0);
   const [isGuessed, setIsGuessed] = useState(false);
-  const [guesses, setGuesses] = useState([]);
-  const [correctCheck, setCorrectCheck] = useState([]);
 
+  const [getNewWord, setGetNewWord] = useState(false);
   const [semiCorrectLetters, setSemiCorrectLetters] = useState([]);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [incorrectLetters, setIncorrectLetters] = useState([]);
-
+  const [guesses, setGuesses] = useState([]);
+  const [correctCheck, setCorrectCheck] = useState([]);
   const gameContainerRef = useRef(null);
 
   async function fetchRandomWord() {
@@ -25,16 +27,21 @@ function App() {
     );
     const data = await res.json();
     let newWord = data[0].toUpperCase();
+
     setWord(newWord);
+
+    console.log(word);
 
     setGuesses([]);
     setCorrectCheck([]);
     setInputTextValue('');
     setTurn(0);
     setIsGuessed(false);
+    setGetNewWord(false);
     setSemiCorrectLetters([]);
     setCorrectLetters([]);
     setIncorrectLetters([]);
+
     setTimeout(() => {
       gameContainerRef.current?.focus();
     }, 0);
@@ -43,6 +50,22 @@ function App() {
   useEffect(() => {
     fetchRandomWord();
   }, []);
+
+  const nextWordKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      fetchRandomWord();
+    }
+  };
+
+  useEffect(() => {
+    if (!getNewWord) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    } else {
+      window.addEventListener('keydown', nextWordKeyDown);
+      return () => window.removeEventListener('keydown', nextWordKeyDown);
+    }
+  }, [handleKeyDown, getNewWord]);
 
   const handleCheck = useCallback(() => {
     if (inputTextValue.length !== 5) return;
@@ -110,7 +133,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  /*do not delete */
   const isGameLost = !isGuessed && turn === 5;
   const showModal = isGuessed || isGameLost;
 
